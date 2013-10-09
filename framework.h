@@ -46,7 +46,22 @@ private:
 	HDC  hDC;
 };
 
-struct renderClass{
+struct glClass{
+protected:
+	PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB;
+	PFNWGLGETEXTENSIONSSTRINGARBPROC wglGetExtensionsStringARB;
+	
+	PFNGLGENBUFFERSPROC glGenBuffers;
+	PFNGLBINDBUFFERPROC glBindBuffer;
+	PFNGLBUFFERDATAPROC glBufferData;
+	
+	PFNGLENABLEVERTEXATTRIBARRAYPROC glEnableVertexAttribArray;
+	PFNGLVERTEXATTRIBPOINTERPROC glVertexAttribPointer;
+	PFNGLDISABLEVERTEXATTRIBARRAYPROC glDisableVertexAttribArray;
+	
+};
+
+struct renderClass: public glClass{
 	renderClass(const framework*);
 
 	void makeGLContext(const HDC hDC);
@@ -56,7 +71,7 @@ struct renderClass{
 	
 	void clear();
 	void swapBuffers();
-	void setupVertexArray(GLfloat* array);
+	void setupVertexArray(const GLfloat*, const std::size_t);
 	void draw();
 
 private:
@@ -65,14 +80,8 @@ private:
 	HGLRC hGLrc;
 	const framework* parent;
 	int contextState;
-	glClass* gl;
 	
 	GLuint vertexbuffer;
 	
-};
-
-struct glClass{
-	PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB;
-	PFNWGLGETEXTENSIONSSTRINGARBPROC wglGetExtensionsStringARB;
 };
 #endif

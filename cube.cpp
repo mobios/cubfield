@@ -9,7 +9,7 @@ field::field(unsigned char widthParam, unsigned char heightParam, unsigned char 
 
 void field::genVerticies(){
 	freeVerticies();
-	verticies = new GLfloat[vertexArraySize];
+	verticies = new GLfloat[vertexArraySize()];
 	unsigned long position = 0;
 	unsigned char flags = 0;
 
@@ -41,6 +41,7 @@ void field::freeVerticies(){
 	if(verticies)
 		delete verticies;
 	verticies = nullptr;
+}
 
 void cube::addVerticies(GLfloat* space, int i, int j, int k, unsigned char flags){
 	GLfloat sides[3];

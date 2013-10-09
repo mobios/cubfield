@@ -32,8 +32,8 @@ framework::framework(HINSTANCE hInstanceParam, WNDPROC windowProcParam){
 	window = new windowClass(this);
 	graphics = new renderClass(this);
 	pField = new field(2,2,2);
-	pField.genVerticies();
-	graphics.setupVertexArray(pField.getVerticies);
+	pField->genVerticies();
+	graphics->setupVertexArray(pField->getVerticies(), pField->vertexArraySize());
 	window->makeAvailable();
 }
 
@@ -101,7 +101,6 @@ renderClass::renderClass(const framework* parentParam){
 	parent = parentParam;
 	contextState = global::glstate::NONE;
 	hGLrc = NULL;
-	gl = new glClass;
 	
 	const HDC hDC = parentParam->getWindow()->getHDC();
 	makeGLContext(hDC);
@@ -153,13 +152,21 @@ void renderClass::loadExtensions(const HDC hDC){
 	if(contextState == global::glstate::NONE)
 		return;
 		
-	gl->wglGetExtensionsStringARB = (PFNWGLGETEXTENSIONSSTRINGARBPROC) wglGetProcAddress("wglGetExtensionsStringARB");
-	const char* extensions = gl->wglGetExtensionsStringARB(hDC);
+	wglGetExtensionsStringARB = (PFNWGLGETEXTENSIONSSTRINGARBPROC) wglGetProcAddress("wglGetExtensionsStringARB");
+	const char* extensions = wglGetExtensionsStringARB(hDC);
 	
 	if(!strstr(extensions, "WGL_ARB_create_context"))
 		finish(global::errorCode::PRECONTEXTUPGRADE, "OpenGL 3/4 is not supported");
 		
-	gl->wglCreateContextAttribsARB = (PFNWGLCREATECONTEXTATTRIBSARBPROC) wglGetProcAddress("wglCreateContextAttribsARB");
+	wglCreateContextAttribsARB = (PFNWGLCREATECONTEXTATTRIBSARBPROC) wglGetProcAddress("wglCreateContextAttribsARB");
+	glGenBuffers = (PFNGLGENBUFFERSPROC) wglGetProcAddress("glGenBuffers");
+	glBindBuffer = (PFNGLBINDBUFFERPROC) wglGetProcAddress("glBindBuffers");
+	glBufferData = (PFNGLBUFFERDATAPROC) wglGetProcAddress("glBufferData");
+	
+	glEnableVertexAttribArray = (PFNGLENABLEVERTEXATTRIBARRAYPROC) wglGetProcAddress("glEnableVertexAttribArray");
+	glVertexAttribPointer = (PFNGLVERTEXATTRIBPOINTERPROC) wglGetProcAddress("glVertexAttribPointer");
+	glDisableVertexAttribArray = (PFNGLDISABLEVERTEXATTRIBARRAYPROC) wglGetProcAddress("glDisableVertexAttribArray");
+	
 	contextState = global::glstate::LOAD;	
 }
 
@@ -173,7 +180,7 @@ void renderClass::upgradeContext(const HDC hDC){
 					0
 	};
 	
-	HGLRC tempHGLRC = gl->wglCreateContextAttribsARB(hDC, 0, gla);
+	HGLRC tempHGLRC = wglCreateContextAttribsARB(hDC, 0, gla);
 	if(!tempHGLRC)
 		finish(global::errorCode::PRECONTEXTUPGRADE, "Could not upgrade context");
 		
@@ -191,13 +198,13 @@ void renderClass::clear(){
 }
 
 void renderClass::swapBuffers(){
-	SwapBuffers(parent->getHDC());
+	SwapBuffers(parent->getWindow()->getHDC());
 }
 
-void renderClass::setupVertexArray(GLfloat* array){
+void renderClass::setupVertexArray(const GLfloat* array, const std::size_t size){
 	glGenBuffers(1, &vertexbuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-	glBufferData(GL_ARRAY_BUFFER, cube::vertexArraySize, array, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, size, array, GL_STATIC_DRAW);
 }
 
 void renderClass::draw(){
