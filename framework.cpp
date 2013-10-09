@@ -14,7 +14,7 @@ const windowClass* framework::getWindow() const{
 	return window;
 }
 
-const renderClass* framework::getRender() const{
+renderClass* framework::getRender() const{
 	return graphics;
 }
 
@@ -32,6 +32,8 @@ framework::framework(HINSTANCE hInstanceParam, WNDPROC windowProcParam){
 	window = new windowClass(this);
 	graphics = new renderClass(this);
 	pField = new field(2,2,2);
+	pField.genVerticies();
+	graphics.setupVertexArray(pField.getVerticies);
 	window->makeAvailable();
 }
 
@@ -182,4 +184,37 @@ void renderClass::upgradeContext(const HDC hDC){
 
 void renderClass::finish(const global::errorCode code, const std::string &error){
 	parent->finish(code, &error);
+}
+
+void renderClass::clear(){
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
+void renderClass::swapBuffers(){
+	SwapBuffers(parent->getHDC());
+}
+
+void renderClass::setupVertexArray(GLfloat* array){
+	glGenBuffers(1, &vertexbuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+	glBufferData(GL_ARRAY_BUFFER, cube::vertexArraySize, array, GL_STATIC_DRAW);
+}
+
+void renderClass::draw(){
+	clear();
+	
+	glEnableVertexAttribArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+	glVertexAttribPointer(
+		0,
+		3,
+		GL_FLOAT,
+		GL_FALSE,
+		0,
+		(void*)0
+	);
+	
+	glDrawArrays(GL_TRIANGLES, 0, 3);
+	glDisableVertexAttribArray(0);
+	swapBuffers();
 }

@@ -11,9 +11,13 @@ struct field{
 
 	field(unsigned char, unsigned char, unsigned char);
 
-	GLfloat* getVerticies() const;
+	void genVerticies();
+	void freeVerticies();
+	const GLfloat* getVerticies() const;
 	const int getNumVerticies() const;
 
+	std::size_t vertexArraySize(){return arrlen * 6*2*3*3 * sizeof(GLfloat*);};
+	
 private:
 	int arrlen;
 	GLfloat* verticies;
@@ -29,13 +33,13 @@ class cube{
 public:
 	static void addVerticies(GLfloat*, int, int, int, unsigned char);
 	static constexpr GLfloat size = 1.f;
-	static constexpr char numVerticies = 6*2*3*3;
+	static const std::size_t numBytesCube = 6*2*3*3;
 	static constexpr GLfloat spacing = 0.4f;
 	static void cubeSides(unsigned char, int, int, int, GLfloat*);
 	static void sidesToVert(GLfloat*, GLfloat*);
 	static void vertsToTri(GLfloat*, GLfloat*);
-	inline void loadTri(GLfloat*, GLfloat*);
-	inline void incrementTri(GLfloat**);
+	inline static void loadTri(GLfloat*, GLfloat*, GLfloat*, GLfloat*);
+	inline static void incrementTri(GLfloat**);
 	inline static void loadVert(GLfloat*, float, float, float);
 };
 	

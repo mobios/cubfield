@@ -7,7 +7,9 @@ field::field(unsigned char widthParam, unsigned char heightParam, unsigned char 
 	arrlen = height * width * depth;
 }
 
-void cube::getVerticies(GLfloat* verticies) const{
+void field::genVerticies(){
+	freeVerticies();
+	verticies = new GLfloat[vertexArraySize];
 	unsigned long position = 0;
 	unsigned char flags = 0;
 
@@ -24,16 +26,25 @@ void cube::getVerticies(GLfloat* verticies) const{
 			int jEffective = jTemp - width/2;
 			for(unsigned char kTemp = 0; kTemp < height; ++kTemp){
 				int kEffective = kTemp - height/2;
-				addVerticies(verticies+position*cube::numVerticies, iEffective, jEffective, kEffective, flags);
+				cube::addVerticies(verticies+position*cube::numBytesCube, iEffective, jEffective, kEffective, flags);
 				++position;
 			}
 		}
 	}
 }
 
+const GLfloat* field::getVerticies() const{
+	return verticies;
+}
+
+void field::freeVerticies(){
+	if(verticies)
+		delete verticies;
+	verticies = nullptr;
+
 void cube::addVerticies(GLfloat* space, int i, int j, int k, unsigned char flags){
 	GLfloat sides[3];
-	GLfloat[8*3] verticies;
+	GLfloat verticies[8*3];
 	GLfloat* triangles = space;
 	cubeSides(flags, i, j, k, sides);
 	sidesToVert(sides, verticies);
@@ -41,9 +52,9 @@ void cube::addVerticies(GLfloat* space, int i, int j, int k, unsigned char flags
 }
 
 void cube::cubeSides(unsigned char flags, int iParam, int jParam, int kParam, GLfloat* sides){
-	i = (float)iParam;
-	j = (float)jParam;
-	k = (float)kParam;
+	auto i = (float)iParam;
+	auto j = (float)jParam;
+	auto k = (float)kParam;
 
 	i *= cube::spacing;
 	j *= cube::spacing;
@@ -63,74 +74,74 @@ void cube::cubeSides(unsigned char flags, int iParam, int jParam, int kParam, GL
 	sides[2]=k;
 }
 
-void cube::loadVert(GLfloat* vert, float i, float j, float k){
+void cube::loadVert(GLfloat* vert, GLfloat i, GLfloat j, GLfloat k){
 	vert[0] = i;
 	vert[1] = j;
 	vert[2] = k;
 }
 
-void cube::sidesToVert(GLfloat* sides, GLfloat* vertParam){
-	GLfloat* vert = vertParam;
-	float i = sides[0];
-	float j = sides[1];
-	float k = sides[2];
+void cube::sidesToVert(GLfloat* sides, GLfloat* vert){
+	GLfloat* vertParam = vert;
+	GLfloat i = sides[0];
+	GLfloat j = sides[1];
+	GLfloat k = sides[2];
 
-	float iF = i+size;
-	float jF = j+size;
-	float kF = k+size;
+	GLfloat iF = i+size;
+	GLfloat jF = j+size;
+	GLfloat kF = k+size;
 
 	while(true){
 		loadVert(vert, i, j, k);
-		loadVert(vert+1*size, i, jF, k);
-		loadVert(vert+2*size, iF, jF, k);
-		loadVert(vert+3*size, iF, j, k);
+		loadVert(vert+1*3, i, jF, k);
+		loadVert(vert+2*3, iF, jF, k);
+		loadVert(vert+3*3, iF, j, k);
 	
 		if(vert != vertParam)
-			break;
+			return;
 		k = kF;
-		vert += size*4;
+		vert += 4*3;
 	}
 }
 
 void cube::vertsToTri(GLfloat* verts, GLfloat* triangles){
-	loadTri(triangles, verts, verts[1*3], verts[2*3]);
+	loadTri(triangles, verts, verts+(1*3), verts+(2*3));
 	incrementTri(&triangles);
 
-	loadTri(triangles, verts, verts[3*3], verts[2*3]);
+	loadTri(triangles, verts, verts+(3*3), verts+(2*3));
 	incrementTri(&triangles);
 
-	loadTri(triangles, verts, verts[4*3], verts[5*3]);
+	loadTri(triangles, verts, verts+(4*3), verts+(5*3));
 	incrementTri(&triangles);
 
-	loadTri(triangles, verts, verts[1*3], verts[5*3]);
+	loadTri(triangles, verts, verts+(1*3), verts+(5*3));
 	incrementTri(&triangles);
 
-	loadTri(triangles, verts, verts[4*3], verts[7*3]);
+	loadTri(triangles, verts, verts+(4*3), verts+(7*3));
 	incrementTri(&triangles);
 
-	loadTri(triangles, verts, verts[3*3], verts[7*3]);
+	loadTri(triangles, verts, verts+(3*3), verts+(7*3));
 	incrementTri(&triangles);
 
-	loadTri(triangles, verts[6*3], verts[2*3], verts[1*3]);
+	loadTri(triangles, verts+(6*3), verts+(2*3), verts+(1*3));
 	incrementTri(&triangles);
 
-	loadTri(triangles, verts[6*3], verts[5*3], verts[1*3]);
+	loadTri(triangles, verts+(6*3), verts+(5*3), verts+(1*3));
 	incrementTri(&triangles);
 	
-	loadTri(triangles, verts[6*3], verts[7*3], verts[3*3]);
+	loadTri(triangles, verts+(6*3), verts+(7*3), verts+(3*3));
 	incrementTri(&triangles);
 	
-	loadTri(triangles, verts[6*3], verts[2*3], verts[3*3]);
+	loadTri(triangles, verts+(6*3), verts+(2*3), verts+(3*3));
 	incrementTri(&triangles);
 	
-	loadTri(triangles, verts[6*3], verts[5*3], verts[4*3]);
+	loadTri(triangles, verts+(6*3), verts+(5*3), verts+(4*3));
 	incrementTri(&triangles);
 	
-	loadTri(triangles, verts[6*3], verts[7*3], verts[4*3]);
+	loadTri(triangles, verts+(6*3), verts+(7*3), verts+(4*3));
 }
 
 
-void cube::loadTri(GLfloat* tri, GLfloat* vert0, GLfloat* vert1, Glfloat* vert2){
+void cube::loadTri(GLfloat* tri, GLfloat* vert0, GLfloat* vert1, GLfloat* vert2){
 	tri[0] = vert0[0];
 	tri[1] = vert0[1];
 	tri[2] = vert0[2];

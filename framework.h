@@ -13,12 +13,14 @@ struct framework{
 	void finish(const global::errorCode code, const std::string* error = nullptr) const;
 
 	const windowClass* getWindow() const;
-	const renderClass* getRender() const;
+	renderClass* getRender() const;
 	HINSTANCE getHINSTANCE() const;
 	WNDPROC getWNDPROC() const;
 
 	framework(HINSTANCE, WNDPROC);
 	~framework();
+	
+	//void draw(){graphics->draw();};
 
 private:
 	windowClass* window;
@@ -51,6 +53,11 @@ struct renderClass{
 	void makeCurrent(const HDC, const bool erase = false);
 	void loadExtensions(const HDC);
 	void upgradeContext(const HDC);
+	
+	void clear();
+	void swapBuffers();
+	void setupVertexArray(GLfloat* array);
+	void draw();
 
 private:
 	void finish(const global::errorCode, const std::string &);
@@ -59,6 +66,9 @@ private:
 	const framework* parent;
 	int contextState;
 	glClass* gl;
+	
+	GLuint vertexbuffer;
+	
 };
 
 struct glClass{
