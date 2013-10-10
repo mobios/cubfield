@@ -175,7 +175,15 @@ void renderClass::loadExtensions(const HDC hDC){
 	
 	glCreateShader = (PFNGLCREATESHADERPROC) wglGetProcAddress("glCreateShader");
 	loadGL(glShaderSource, PFNGLSHADERSOURCEPROC);
-	
+	loadGL(glCompileShader, PFNGLCOMPILESHADERPROC);
+	loadGL(glGetShaderiv, PFNGLGETSHADERIVPROC);
+	loadGL(glGetShaderInfoLog, PFNGLGETSHADERINFOLOGPROC);
+	loadGL(glCreateProgram, PFNGLCREATEPROGRAMPROC);
+	loadGL(glAttachShader, PFNGLATTACHSHADERPROC);
+	loadGL(glLinkProgram, PFNGLLINKPROGRAMPROC);
+	loadGL(glGetProgramiv, PFNGLGETPROGRAMIVPROC);
+	loadGL(glGetProgramInfoLog, PFNGETPROGRAMINFOLOGPROC);
+	loadGL(glDeleteShader, PFNGLDELETESHADERPROC);
 	
 	contextState = global::glstate::LOAD;	
 	std::cout << "Done loading\n";
@@ -242,54 +250,85 @@ void renderClass::draw(){
 }
 
 void renderClass::loadShaders(){
-	constexpr char* vShaderFile = "vertex.glsl";
-	constexpr char* fShaderFile = "fragment.glsl";
+	std::string vShaderFile = "vertex.glsl";
+	std::string fShaderFile = "fragment.glsl";
 	
 	const GLuint vertexShaderID = glCreateShader(GL_VERTEX_SHADER);
 	const GLuint fragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
 	
 	std::string vertexShader;
-	std::ifstream vShaderStream;
+	std::ifstream vShaderStream(vShaderFile, std::ios::in);
 	if(!vShaderStream.is_open()){
 		std::string msg = "Vertex shader not found";
 		parent->finish(global::errorCode::PRESHADER, &msg);
 	}
 	
 	std::string line;
-	while(getline(vShaderStream, line)
+	while(getline(vShaderStream, line))
 		vertexShader += line + "\n";
 	vShaderStream.close();
 	
 	std::string fragmentShader;
-	std::ifstream fShaderStream
-	if(!fShaderStream.is_open){
+	std::ifstream fShaderStream(fShaderFile, std::ios::in);
+	if(!fShaderStream.is_open()){
 		std::string msg = "Fragment shader not found";
 		parent->finish(global::errorCode::PRESHADER, &msg);
 	}
 	
 	line = "";
-	while(getline(fShaderStream, line)
+	while(getline(fShaderStream, line))
 		fragmentShader += line + "\n";
 	fShaderStream.close();
 	
 	GLint compResult;
 	std::size_t logLength;
-	
-	glShaderSource(vertexShaderID, 1, &(vertexShader.c_str()), NULL);
+	char* vertexSource = vertexShader.c_str();
+	glShaderSource(vertexShaderID, 1, &vertexSource, NULL);
 	glCompileShader(vertexShaderID);
 	
 	glGetShaderiv(vertexShaderID, GL_COMPILE_STATUS, &compResult);
 	glGetShaderiv(vertexShaderID, GL_INFO_LOG_LENGTH, &logLength);
 	if(compResult == GL_FALSE){
-		std::string msg = "Vertex shader not found.\n";
+		std::string msg = "Vertex shader could not compile.\n";
 		char* logBuffer = new char[logLength];
-		glGetShaderInfoLog(vertexShaderID, logLength, &logLength, logBuffer);
+		glGetShaderInfoLog(vertexShaderID, logLength, (int*)&logLength, logBuffer);
+		msg += logBuffer;
+		delete logBuffer;
+		parent->finish(global::errorCode::PRESHADER, &msg);
+	}
+	char* fragmentSource = fragmentShader.c_str();
+	glShaderSource(fragmentShaderID, 1, &fragmentSource, NULL);
+	glCompileShader(fragmentShaderID);
+	
+	glGetShaderiv(fragmentShaderID, GL_COMPILE_STATUS, &compResult);
+	glGetShaderiv(fragmentShaderID, GL_INFO_LOG_LENGTH, &logLength);
+	if(compResult == GL_FALSE){
+		std::string msg = "Fragment shader could not compile.\n";
+		char* logBuffer = new char[logLength];
+		glGetShaderInfoLog(fragmentShaderID, logLength, (int*)&logLength, logBuffer);
 		msg += logBuffer;
 		delete logBuffer;
 		parent->finish(global::errorCode::PRESHADER, &msg);
 	}
 	
-	glShaderSource(fragmentShaderID, 1, &(fragmentShader.c_str()), NULL);
+	GLuint shaderProgram = glCreateProgram();
+	glAttachShader(shaderProgram, vertexShaderID);
+	glAttachShader(shaderProgram, fragmentShaderID);
+	glLinkProgram(shaderProgram);
+	
+	auto programResult = compResult;
+	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &programResult);
+	glGetProgramiv(shaderProgram, GL_INFO_LOG_LENGTH, &logLength);
+	if(programResult == GL_FALSE){
+		std::string msg = "Shader programs could not link.\n";
+		char* logBuffer = new char[logLength];
+		glGetProgramInfoLog(shaderProgram, logLength, (int*)&logLength, logBuffer);
+		msg += logBuffer;
+		delete logBuffer;
+		parent->finish(global::errorCode::PRESHADER, &msg);
+	}
+	glDeleteShader(vertexShaderID);
+	glDeleteShader(fragmentShaderID);
 }
 	
 	
