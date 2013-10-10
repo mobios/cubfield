@@ -32,7 +32,7 @@ class cube{
 
 public:
 	static void addVerticies(GLfloat*, int, int, int, unsigned char);
-	static constexpr GLfloat size = 1.f;
+	static constexpr GLfloat size = .1f;
 	static const std::size_t numBytesCube = 6*2*3*3;
 	static constexpr GLfloat spacing = 0.4f;
 	static void cubeSides(unsigned char, int, int, int, GLfloat*);

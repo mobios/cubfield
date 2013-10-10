@@ -31,8 +31,10 @@ framework::framework(HINSTANCE hInstanceParam, WNDPROC windowProcParam){
 	windowProc = windowProcParam;
 	window = new windowClass(this);
 	graphics = new renderClass(this);
-	pField = new field(2,2,2);
+	pField = new field(1,1,1);
+	std::cout << "Pre gen1\n";
 	pField->genVerticies();
+	std::cout << "post gen\n";
 	graphics->setupVertexArray(pField->getVerticies(), pField->vertexArraySize());
 	window->makeAvailable();
 }
@@ -42,6 +44,10 @@ framework::~framework(){
 		delete window;
 	if(graphics)
 		delete graphics;
+}
+
+void framework::draw(){
+	graphics->draw();
 }
 
 windowClass::windowClass(const framework* parentParam){
@@ -106,6 +112,7 @@ renderClass::renderClass(const framework* parentParam){
 	makeGLContext(hDC);
 	loadExtensions(hDC);
 	upgradeContext(hDC);
+	loadShaders();
 }
 
 void renderClass::makeGLContext(const HDC hDC){	
@@ -160,7 +167,7 @@ void renderClass::loadExtensions(const HDC hDC){
 		
 	wglCreateContextAttribsARB = (PFNWGLCREATECONTEXTATTRIBSARBPROC) wglGetProcAddress("wglCreateContextAttribsARB");
 	glGenBuffers = (PFNGLGENBUFFERSPROC) wglGetProcAddress("glGenBuffers");
-	glBindBuffer = (PFNGLBINDBUFFERPROC) wglGetProcAddress("glBindBuffers");
+	glBindBuffer = (PFNGLBINDBUFFERPROC) wglGetProcAddress("glBindBuffer");
 	glBufferData = (PFNGLBUFFERDATAPROC) wglGetProcAddress("glBufferData");
 	
 	glEnableVertexAttribArray = (PFNGLENABLEVERTEXATTRIBARRAYPROC) wglGetProcAddress("glEnableVertexAttribArray");
@@ -168,6 +175,7 @@ void renderClass::loadExtensions(const HDC hDC){
 	glDisableVertexAttribArray = (PFNGLDISABLEVERTEXATTRIBARRAYPROC) wglGetProcAddress("glDisableVertexAttribArray");
 	
 	contextState = global::glstate::LOAD;	
+	std::cout << "Done loading\n";
 }
 
 void renderClass::upgradeContext(const HDC hDC){
@@ -202,9 +210,13 @@ void renderClass::swapBuffers(){
 }
 
 void renderClass::setupVertexArray(const GLfloat* array, const std::size_t size){
+	std::cout << "Pre gen\n";
 	glGenBuffers(1, &vertexbuffer);
+	std::cout << "Pre buffer bind\n";
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+	std::cout << "post buffer bind\n";
 	glBufferData(GL_ARRAY_BUFFER, size, array, GL_STATIC_DRAW);
+	vertexbuffersize = size;
 }
 
 void renderClass::draw(){
@@ -214,14 +226,14 @@ void renderClass::draw(){
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
 	glVertexAttribPointer(
 		0,
-		3,
+		vertexbuffersize,
 		GL_FLOAT,
 		GL_FALSE,
 		0,
 		(void*)0
 	);
 	
-	glDrawArrays(GL_TRIANGLES, 0, 3);
+	glDrawArrays(GL_TRIANGLES, 0, vertexbuffersize);
 	glDisableVertexAttribArray(0);
 	swapBuffers();
 }

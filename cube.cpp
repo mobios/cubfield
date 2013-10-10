@@ -1,13 +1,16 @@
 #include "cube.h"
+#include <iostream>
 
 field::field(unsigned char widthParam, unsigned char heightParam, unsigned char depthParam){
 	width = widthParam;
 	height = heightParam;
 	depth = depthParam;
 	arrlen = height * width * depth;
+	verticies = nullptr;
 }
 
 void field::genVerticies(){
+	std::cout << "pre free" << std::endl;
 	freeVerticies();
 	verticies = new GLfloat[vertexArraySize()];
 	unsigned long position = 0;
@@ -19,7 +22,7 @@ void field::genVerticies(){
 		flags = flags | 0b10;
 	if(depth % 2 == 1)
 		flags = flags | 0b100;
-
+	std::cout << "preflags\n";
 	for(unsigned char iTemp = 0; iTemp< depth; ++iTemp){
 		int iEffective = iTemp - depth/2;
 		for(unsigned char jTemp = 0; jTemp < width; ++jTemp){

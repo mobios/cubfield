@@ -14,6 +14,6 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 		
-		frame.getRender()->draw();
+		frame.draw();
 	}
 }

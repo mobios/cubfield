@@ -20,7 +20,7 @@ struct framework{
 	framework(HINSTANCE, WNDPROC);
 	~framework();
 	
-	//void draw(){graphics->draw();};
+	void draw();
 
 private:
 	windowClass* window;
@@ -67,6 +67,8 @@ struct renderClass: public glClass{
 	void makeGLContext(const HDC hDC);
 	void makeCurrent(const HDC, const bool erase = false);
 	void loadExtensions(const HDC);
+	void loadShaders();
+	
 	void upgradeContext(const HDC);
 	
 	void clear();
@@ -82,6 +84,7 @@ private:
 	int contextState;
 	
 	GLuint vertexbuffer;
+	std::size_t vertexbuffersize;
 	
 };
 #endif
