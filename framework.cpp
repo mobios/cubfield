@@ -173,6 +173,10 @@ void renderClass::loadExtensions(const HDC hDC){
 	glVertexAttribPointer = (PFNGLVERTEXATTRIBPOINTERPROC) wglGetProcAddress("glVertexAttribPointer");
 	glDisableVertexAttribArray = (PFNGLDISABLEVERTEXATTRIBARRAYPROC) wglGetProcAddress("glDisableVertexAttribArray");
 	
+	glCreateShader = (PFNGLCREATESHADERPROC) wglGetProcAddress("glCreateShader");
+	loadGL(glShaderSource, PFNGLSHADERSOURCEPROC);
+	
+	
 	contextState = global::glstate::LOAD;	
 	std::cout << "Done loading\n";
 }
@@ -245,8 +249,8 @@ void renderClass::loadShaders(){
 	const GLuint fragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
 	
 	std::string vertexShader;
-	std::ifstream vShaderStream
-	if(!vShaderStream.is_open){
+	std::ifstream vShaderStream;
+	if(!vShaderStream.is_open()){
 		std::string msg = "Vertex shader not found";
 		parent->finish(global::errorCode::PRESHADER, &msg);
 	}
@@ -263,18 +267,29 @@ void renderClass::loadShaders(){
 		parent->finish(global::errorCode::PRESHADER, &msg);
 	}
 	
-	std::string line;
+	line = "";
 	while(getline(fShaderStream, line)
 		fragmentShader += line + "\n";
 	fShaderStream.close();
 	
-	GLint compResult = GL_FALSE;
-	int logLength;
+	GLint compResult;
+	std::size_t logLength;
 	
 	glShaderSource(vertexShaderID, 1, &(vertexShader.c_str()), NULL);
 	glCompileShader(vertexShaderID);
 	
 	glGetShaderiv(vertexShaderID, GL_COMPILE_STATUS, &compResult);
-	glGetShaderiv(
+	glGetShaderiv(vertexShaderID, GL_INFO_LOG_LENGTH, &logLength);
+	if(compResult == GL_FALSE){
+		std::string msg = "Vertex shader not found.\n";
+		char* logBuffer = new char[logLength];
+		glGetShaderInfoLog(vertexShaderID, logLength, &logLength, logBuffer);
+		msg += logBuffer;
+		delete logBuffer;
+		parent->finish(global::errorCode::PRESHADER, &msg);
+	}
+	
+	glShaderSource(fragmentShaderID, 1, &(fragmentShader.c_str()), NULL);
+}
 	
 	

@@ -3,7 +3,7 @@
 
 #include "common.h"
 #include "cube.h"
-#include <ifstream>
+#include <fstream>
 #include <iostream>
 
 struct windowClass;
@@ -61,6 +61,10 @@ protected:
 	PFNGLENABLEVERTEXATTRIBARRAYPROC glEnableVertexAttribArray;
 	PFNGLVERTEXATTRIBPOINTERPROC glVertexAttribPointer;
 	PFNGLDISABLEVERTEXATTRIBARRAYPROC glDisableVertexAttribArray;
+	
+	PFNGLCREATESHADERPROC glCreateShader;
+	PFNGLSHADERSOURCEPROC glShaderSource;
+	PFNGLCOMPILESHADERPROC glCompileShader;
 	
 };
 

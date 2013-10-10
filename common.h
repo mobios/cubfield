@@ -6,7 +6,9 @@
 #include <GL\gl.h>
 #include <GL\glext.h>
 #include <GL\wglext.h>
-#include <GLM\glm.hpp>
+
+#define loadGL(func, ptrtype) func = (ptrtype) wglGetProcAddress(#func)
+//#include <GLM\glm.hpp>
 
 typedef HGLRC (APIENTRYP PFNWGLCREATECONTEXTATTRIBSARBPROC) (HDC hDC, HGLRC hShareContext, const int *attribList);
 
