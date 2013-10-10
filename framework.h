@@ -3,6 +3,9 @@
 
 #include "common.h"
 #include "cube.h"
+#include <ifstream>
+#include <iostream>
+
 struct windowClass;
 struct renderClass;
 struct glClass;

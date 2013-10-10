@@ -1,5 +1,4 @@
 #include "framework.h"
-#include <iostream>
 
 void framework::finish(const global::errorCode code, const std::string* error) const{
 	if(code && error){
@@ -237,3 +236,45 @@ void renderClass::draw(){
 	glDisableVertexAttribArray(0);
 	swapBuffers();
 }
+
+void renderClass::loadShaders(){
+	constexpr char* vShaderFile = "vertex.glsl";
+	constexpr char* fShaderFile = "fragment.glsl";
+	
+	const GLuint vertexShaderID = glCreateShader(GL_VERTEX_SHADER);
+	const GLuint fragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
+	
+	std::string vertexShader;
+	std::ifstream vShaderStream
+	if(!vShaderStream.is_open){
+		std::string msg = "Vertex shader not found";
+		parent->finish(global::errorCode::PRESHADER, &msg);
+	}
+	
+	std::string line;
+	while(getline(vShaderStream, line)
+		vertexShader += line + "\n";
+	vShaderStream.close();
+	
+	std::string fragmentShader;
+	std::ifstream fShaderStream
+	if(!fShaderStream.is_open){
+		std::string msg = "Fragment shader not found";
+		parent->finish(global::errorCode::PRESHADER, &msg);
+	}
+	
+	std::string line;
+	while(getline(fShaderStream, line)
+		fragmentShader += line + "\n";
+	fShaderStream.close();
+	
+	GLint compResult = GL_FALSE;
+	int logLength;
+	
+	glShaderSource(vertexShaderID, 1, &(vertexShader.c_str()), NULL);
+	glCompileShader(vertexShaderID);
+	
+	glGetShaderiv(vertexShaderID, GL_COMPILE_STATUS, &compResult);
+	glGetShaderiv(
+	
+	

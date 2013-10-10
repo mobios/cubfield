@@ -18,7 +18,8 @@ namespace global{
 	enum errorCode{
 		PREWINDOW =1,
 		PRECONTEXT,
-		PRECONTEXTUPGRADE
+		PRECONTEXTUPGRADE,
+		PRESHADER
 	};
 
 	enum glstate{
