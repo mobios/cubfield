@@ -111,6 +111,7 @@ renderClass::renderClass(const framework* parentParam){
 	makeGLContext(hDC);
 	loadExtensions(hDC);
 	upgradeContext(hDC);
+	
 	loadShaders();
 }
 
@@ -182,8 +183,11 @@ void renderClass::loadExtensions(const HDC hDC){
 	loadGL(glAttachShader, PFNGLATTACHSHADERPROC);
 	loadGL(glLinkProgram, PFNGLLINKPROGRAMPROC);
 	loadGL(glGetProgramiv, PFNGLGETPROGRAMIVPROC);
-	loadGL(glGetProgramInfoLog, PFNGETPROGRAMINFOLOGPROC);
+	loadGL(glGetProgramInfoLog, PFNGLGETPROGRAMINFOLOGPROC);
 	loadGL(glDeleteShader, PFNGLDELETESHADERPROC);
+	loadGL(glUseProgram, PFNGLUSEPROGRAMPROC);
+	loadGL(glGenVertexArrays, PFNGLGENVERTEXARRAYSPROC);
+	loadGL(glBindVertexArray, PFNGLBINDVERTEXARRAYPROC);
 	
 	contextState = global::glstate::LOAD;	
 	std::cout << "Done loading\n";
@@ -221,30 +225,38 @@ void renderClass::swapBuffers(){
 }
 
 void renderClass::setupVertexArray(const GLfloat* array, const std::size_t size){
-	std::cout << "Pre gen\n";
+	GLuint VertexArrayID;
+	glGenVertexArrays(1, &VertexArrayID);
+	glBindVertexArray(VertexArrayID);
+	static const GLfloat g_vertex_buffer_data[] = {
+	   -1.0f, -1.0f, 0.0f,
+	   1.0f, -1.0f, 0.0f,
+	   0.0f,  1.0f, 0.0f,
+	};
 	glGenBuffers(1, &vertexbuffer);
-	std::cout << "Pre buffer bind\n";
+	glBindBuffer(GL_ARRAY_BUFFER,vertexbuffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
+/* 	glGenBuffers(1, &vertexbuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-	std::cout << "post buffer bind\n";
 	glBufferData(GL_ARRAY_BUFFER, size, array, GL_STATIC_DRAW);
-	vertexbuffersize = size;
+	vertexbuffersize = size; */
 }
 
 void renderClass::draw(){
 	clear();
-	
+	glUseProgram(shaderProgram);
 	glEnableVertexAttribArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
 	glVertexAttribPointer(
 		0,
-		vertexbuffersize,
+		3,
 		GL_FLOAT,
 		GL_FALSE,
 		0,
 		(void*)0
 	);
 	
-	glDrawArrays(GL_TRIANGLES, 0, vertexbuffersize);
+	glDrawArrays(GL_TRIANGLES, 0, 3);
 	glDisableVertexAttribArray(0);
 	swapBuffers();
 }
@@ -280,14 +292,14 @@ void renderClass::loadShaders(){
 		fragmentShader += line + "\n";
 	fShaderStream.close();
 	
-	GLint compResult;
+	GLint compResult = GL_FALSE;
 	std::size_t logLength;
-	char* vertexSource = vertexShader.c_str();
+	const char* vertexSource = vertexShader.c_str();
 	glShaderSource(vertexShaderID, 1, &vertexSource, NULL);
 	glCompileShader(vertexShaderID);
 	
 	glGetShaderiv(vertexShaderID, GL_COMPILE_STATUS, &compResult);
-	glGetShaderiv(vertexShaderID, GL_INFO_LOG_LENGTH, &logLength);
+	glGetShaderiv(vertexShaderID, GL_INFO_LOG_LENGTH, (int*)&logLength);
 	if(compResult == GL_FALSE){
 		std::string msg = "Vertex shader could not compile.\n";
 		char* logBuffer = new char[logLength];
@@ -296,12 +308,12 @@ void renderClass::loadShaders(){
 		delete logBuffer;
 		parent->finish(global::errorCode::PRESHADER, &msg);
 	}
-	char* fragmentSource = fragmentShader.c_str();
+	const char* fragmentSource = fragmentShader.c_str();
 	glShaderSource(fragmentShaderID, 1, &fragmentSource, NULL);
 	glCompileShader(fragmentShaderID);
 	
 	glGetShaderiv(fragmentShaderID, GL_COMPILE_STATUS, &compResult);
-	glGetShaderiv(fragmentShaderID, GL_INFO_LOG_LENGTH, &logLength);
+	glGetShaderiv(fragmentShaderID, GL_INFO_LOG_LENGTH, (int*)&logLength);
 	if(compResult == GL_FALSE){
 		std::string msg = "Fragment shader could not compile.\n";
 		char* logBuffer = new char[logLength];
@@ -311,14 +323,14 @@ void renderClass::loadShaders(){
 		parent->finish(global::errorCode::PRESHADER, &msg);
 	}
 	
-	GLuint shaderProgram = glCreateProgram();
+	shaderProgram = glCreateProgram();
 	glAttachShader(shaderProgram, vertexShaderID);
 	glAttachShader(shaderProgram, fragmentShaderID);
 	glLinkProgram(shaderProgram);
 	
 	auto programResult = compResult;
 	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &programResult);
-	glGetProgramiv(shaderProgram, GL_INFO_LOG_LENGTH, &logLength);
+	glGetProgramiv(shaderProgram, GL_INFO_LOG_LENGTH, (int*)&logLength);
 	if(programResult == GL_FALSE){
 		std::string msg = "Shader programs could not link.\n";
 		char* logBuffer = new char[logLength];

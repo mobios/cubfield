@@ -72,8 +72,11 @@ protected:
 	PFNGLATTACHSHADERPROC glAttachShader;
 	PFNGLLINKPROGRAMPROC glLinkProgram;
 	PFNGLGETPROGRAMIVPROC glGetProgramiv;
+	PFNGLUSEPROGRAMPROC glUseProgram;
 	PFNGLGETPROGRAMINFOLOGPROC glGetProgramInfoLog;
 	PFNGLDELETESHADERPROC glDeleteShader;
+	PFNGLGENVERTEXARRAYSPROC glGenVertexArrays;
+	PFNGLBINDVERTEXARRAYPROC glBindVertexArray;
 	
 };
 
@@ -99,7 +102,9 @@ private:
 	const framework* parent;
 	int contextState;
 	
+	GLuint vertexArrayID;
 	GLuint vertexbuffer;
+	GLuint shaderProgram;
 	std::size_t vertexbuffersize;
 	
 };
