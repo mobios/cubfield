@@ -105,6 +105,7 @@ private:
 	GLuint vertexArrayID;
 	GLuint vertexbuffer;
 	GLuint shaderProgram;
+	GLuint vertexAttributeObject;
 	std::size_t vertexbuffersize;
 	
 };

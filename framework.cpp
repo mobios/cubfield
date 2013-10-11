@@ -106,12 +106,14 @@ renderClass::renderClass(const framework* parentParam){
 	parent = parentParam;
 	contextState = global::glstate::NONE;
 	hGLrc = NULL;
+	vertexAttributeObject = 0;
 	
 	const HDC hDC = parentParam->getWindow()->getHDC();
 	makeGLContext(hDC);
 	loadExtensions(hDC);
+	std::cout << "error: " << glGetError() << std::endl;
 	upgradeContext(hDC);
-	
+	std::cout << "upgrade error: " << glGetError() << std::endl;
 	loadShaders();
 }
 
@@ -202,14 +204,22 @@ void renderClass::upgradeContext(const HDC hDC){
 					WGL_CONTEXT_FLAGS_ARB, 0,
 					0
 	};
-	
+	std::cout << "before major error: " << glGetError() << std::endl;
 	HGLRC tempHGLRC = wglCreateContextAttribsARB(hDC, 0, gla);
 	if(!tempHGLRC)
 		finish(global::errorCode::PRECONTEXTUPGRADE, "Could not upgrade context");
-		
-	makeCurrent(hDC, true);
+	
+	std::cout << "after major error: " << glGetError() << std::endl;
+/* 	makeCurrent(hDC, true);
 	hGLrc = tempHGLRC;
-	makeCurrent(hDC, hGLrc);
+	
+	std::cout << "make current 1: " << glGetError() << std::endl;
+	makeCurrent(hDC, hGLrc); */
+	wglMakeCurrent(NULL, NULL);
+	wglDeleteContext(hGLrc);
+	wglMakeCurrent(hDC, tempHGLRC);
+	hGLrc = tempHGLRC;
+	std::cout << "after current shit " << glGetError() << std::endl;
 }
 
 void renderClass::finish(const global::errorCode code, const std::string &error){
@@ -225,17 +235,21 @@ void renderClass::swapBuffers(){
 }
 
 void renderClass::setupVertexArray(const GLfloat* array, const std::size_t size){
-	GLuint VertexArrayID;
-	glGenVertexArrays(1, &VertexArrayID);
-	glBindVertexArray(VertexArrayID);
-	static const GLfloat g_vertex_buffer_data[] = {
+	float g_vertex_buffer_data[] = {
 	   -1.0f, -1.0f, 0.0f,
 	   1.0f, -1.0f, 0.0f,
 	   0.0f,  1.0f, 0.0f,
 	};
 	glGenBuffers(1, &vertexbuffer);
 	glBindBuffer(GL_ARRAY_BUFFER,vertexbuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, 9*sizeof(float), g_vertex_buffer_data, GL_STATIC_DRAW);
+	
+	
+	glGenVertexArrays(1, &vertexAttributeObject);
+	glBindVertexArray(vertexAttributeObject);
+	glEnableVertexAttribArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (GLubyte*) NULL);
 /* 	glGenBuffers(1, &vertexbuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
 	glBufferData(GL_ARRAY_BUFFER, size, array, GL_STATIC_DRAW);
@@ -245,28 +259,19 @@ void renderClass::setupVertexArray(const GLfloat* array, const std::size_t size)
 void renderClass::draw(){
 	clear();
 	glUseProgram(shaderProgram);
-	glEnableVertexAttribArray(0);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-	glVertexAttribPointer(
-		0,
-		3,
-		GL_FLOAT,
-		GL_FALSE,
-		0,
-		(void*)0
-	);
-	
+	glBindVertexArray(vertexAttributeObject);
 	glDrawArrays(GL_TRIANGLES, 0, 3);
-	glDisableVertexAttribArray(0);
 	swapBuffers();
 }
 
 void renderClass::loadShaders(){
 	std::string vShaderFile = "vertex.glsl";
 	std::string fShaderFile = "fragment.glsl";
-	
+	std::cout << "Gl error testing for shading: " << std::endl;
+	std::cout << glGetError() << std::endl;
 	const GLuint vertexShaderID = glCreateShader(GL_VERTEX_SHADER);
 	const GLuint fragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
+	std::cout << glGetError() << std::endl;
 	
 	std::string vertexShader;
 	std::ifstream vShaderStream(vShaderFile, std::ios::in);
@@ -292,7 +297,7 @@ void renderClass::loadShaders(){
 		fragmentShader += line + "\n";
 	fShaderStream.close();
 	
-	GLint compResult = GL_FALSE;
+	GLint compResult = GL_TRUE;
 	std::size_t logLength;
 	const char* vertexSource = vertexShader.c_str();
 	glShaderSource(vertexShaderID, 1, &vertexSource, NULL);
