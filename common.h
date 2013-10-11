@@ -8,6 +8,11 @@
 #include <GL\wglext.h>
 
 #define loadGL(func, ptrtype) func = (ptrtype) wglGetProcAddress(#func)
+#ifdef PARAM_DEBUG
+	#define __debug(message, value) std::cout << #message << value << std::endl;
+#else
+	#define __debug(message, value) ;
+#endif
 //#include <GLM\glm.hpp>
 
 typedef HGLRC (APIENTRYP PFNWGLCREATECONTEXTATTRIBSARBPROC) (HDC hDC, HGLRC hShareContext, const int *attribList);

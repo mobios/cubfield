@@ -111,9 +111,9 @@ renderClass::renderClass(const framework* parentParam){
 	const HDC hDC = parentParam->getWindow()->getHDC();
 	makeGLContext(hDC);
 	loadExtensions(hDC);
-	std::cout << "error: " << glGetError() << std::endl;
+	__debug(loadExtensions error: , glGetError())
 	upgradeContext(hDC);
-	std::cout << "upgrade error: " << glGetError() << std::endl;
+	__debug(upgrade error: ,glGetError())
 	loadShaders();
 }
 
