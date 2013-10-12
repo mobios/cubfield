@@ -106,7 +106,7 @@ private:
 	GLuint vertexbuffer;
 	GLuint shaderProgram;
 	GLuint vertexAttributeObject;
-	std::size_t vertexbuffersize;
+	std::size_t numTriangles;
 	
 };
 #endif

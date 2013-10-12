@@ -6,6 +6,7 @@
 #include <GL\gl.h>
 #include <GL\glext.h>
 #include <GL\wglext.h>
+#define PARAM_DEBUG
 
 #define loadGL(func, ptrtype) func = (ptrtype) wglGetProcAddress(#func)
 #ifdef PARAM_DEBUG

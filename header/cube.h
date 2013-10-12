@@ -2,27 +2,6 @@
 #define CUBE_H_INCLUDED
 #include "common.h"
 
-class cube;
-
-struct field{
-	unsigned char width;
-	unsigned char height;
-	unsigned char depth;
-
-	field(unsigned char, unsigned char, unsigned char);
-
-	void genVerticies();
-	void freeVerticies();
-	const GLfloat* getVerticies() const;
-	const int getNumVerticies() const;
-
-	std::size_t vertexArraySize(){return arrlen * 6*2*3*3 * sizeof(GLfloat*);};
-	
-private:
-	int arrlen;
-	GLfloat* verticies;
-	cube* array;
-};
 
 class cube{
 	bool mine;
@@ -42,5 +21,24 @@ public:
 	inline static void incrementTri(GLfloat**);
 	inline static void loadVert(GLfloat*, float, float, float);
 };
+
+struct field{
+	unsigned char width;
+	unsigned char height;
+	unsigned char depth;
+
+	field(unsigned char, unsigned char, unsigned char);
+
+	void genVerticies();
+	void freeVerticies();
+	const GLfloat* getVerticies() const;
+
+	std::size_t vertexArraySize(){return arrlen * cube::numBytesCube;};
 	
+private:
+	int arrlen;
+	GLfloat* verticies;
+	cube* array;
+};
+
 #endif

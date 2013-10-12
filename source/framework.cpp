@@ -28,15 +28,15 @@ WNDPROC framework::getWNDPROC() const{
 framework::framework(HINSTANCE hInstanceParam, WNDPROC windowProcParam){
 	hInstance = hInstanceParam;
 	windowProc = windowProcParam;
-	__debug(Pre window generation,)
+	__debug(Pre window generation,"...")
 	window = new windowClass(this);
-	__debug(Pre render generation,)
+	__debug(Pre render generation,"...")
 	graphics = new renderClass(this);
 	pField = new field(1,1,1);
-	__debug(Pre vertex generation,)
+	__debug(Pre vertex generation,"...")
 	pField->genVerticies();
 	graphics->setupVertexArray(pField->getVerticies(), pField->vertexArraySize());
-	__debug(Post vertexArray setup,)
+	__debug(Post vertexArray setup,"...")
 	window->makeAvailable();
 }
 
@@ -231,28 +231,25 @@ void renderClass::swapBuffers(){
 }
 
 void renderClass::setupVertexArray(const GLfloat* array, const std::size_t size){
-	float g_vertex_buffer_data[] = {
-	   -1.0f, -1.0f, 0.0f,
-	   1.0f, -1.0f, 0.0f,
-	   0.0f,  1.0f, 0.0f,
-	};
+	numTriangles = (int)(size/3);
 	glGenBuffers(1, &vertexbuffer);
 	glBindBuffer(GL_ARRAY_BUFFER,vertexbuffer);
-	glBufferData(GL_ARRAY_BUFFER, 9*sizeof(float), g_vertex_buffer_data, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, size*sizeof(float), array, GL_STATIC_DRAW);
 	
 	
 	glGenVertexArrays(1, &vertexAttributeObject);
 	glBindVertexArray(vertexAttributeObject);
 	glEnableVertexAttribArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (GLubyte*) NULL);
+	glVertexAttribPointer(0, numTriangles, GL_FLOAT, GL_FALSE, 0, (GLubyte*) NULL);
+	__debug(after vertex setup: , glGetError())
 }
 
 void renderClass::draw(){
 	clear();
 	glUseProgram(shaderProgram);
 	glBindVertexArray(vertexAttributeObject);
-	glDrawArrays(GL_TRIANGLES, 0, 3);
+	glDrawArrays(GL_TRIANGLES, 0, numTriangles);
 	swapBuffers();
 }
 
