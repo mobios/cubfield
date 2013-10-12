@@ -28,13 +28,15 @@ WNDPROC framework::getWNDPROC() const{
 framework::framework(HINSTANCE hInstanceParam, WNDPROC windowProcParam){
 	hInstance = hInstanceParam;
 	windowProc = windowProcParam;
+	__debug(Pre window generation,)
 	window = new windowClass(this);
+	__debug(Pre render generation,)
 	graphics = new renderClass(this);
 	pField = new field(1,1,1);
-	std::cout << "Pre gen1\n";
+	__debug(Pre vertex generation,)
 	pField->genVerticies();
-	std::cout << "post gen\n";
 	graphics->setupVertexArray(pField->getVerticies(), pField->vertexArraySize());
+	__debug(Post vertexArray setup,)
 	window->makeAvailable();
 }
 
@@ -192,7 +194,7 @@ void renderClass::loadExtensions(const HDC hDC){
 	loadGL(glBindVertexArray, PFNGLBINDVERTEXARRAYPROC);
 	
 	contextState = global::glstate::LOAD;	
-	std::cout << "Done loading\n";
+	__debug(OpenGL functions loaded...glState: , contextState)
 }
 
 void renderClass::upgradeContext(const HDC hDC){
@@ -204,22 +206,16 @@ void renderClass::upgradeContext(const HDC hDC){
 					WGL_CONTEXT_FLAGS_ARB, 0,
 					0
 	};
-	std::cout << "before major error: " << glGetError() << std::endl;
 	HGLRC tempHGLRC = wglCreateContextAttribsARB(hDC, 0, gla);
 	if(!tempHGLRC)
 		finish(global::errorCode::PRECONTEXTUPGRADE, "Could not upgrade context");
 	
-	std::cout << "after major error: " << glGetError() << std::endl;
-/* 	makeCurrent(hDC, true);
-	hGLrc = tempHGLRC;
-	
-	std::cout << "make current 1: " << glGetError() << std::endl;
-	makeCurrent(hDC, hGLrc); */
+	__debug(GL context elevation status: , glGetError())
 	wglMakeCurrent(NULL, NULL);
 	wglDeleteContext(hGLrc);
 	wglMakeCurrent(hDC, tempHGLRC);
 	hGLrc = tempHGLRC;
-	std::cout << "after current shit " << glGetError() << std::endl;
+	__debug(GL 3 context association status: , glGetError())
 }
 
 void renderClass::finish(const global::errorCode code, const std::string &error){
@@ -250,10 +246,6 @@ void renderClass::setupVertexArray(const GLfloat* array, const std::size_t size)
 	glEnableVertexAttribArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (GLubyte*) NULL);
-/* 	glGenBuffers(1, &vertexbuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-	glBufferData(GL_ARRAY_BUFFER, size, array, GL_STATIC_DRAW);
-	vertexbuffersize = size; */
 }
 
 void renderClass::draw(){
@@ -267,11 +259,10 @@ void renderClass::draw(){
 void renderClass::loadShaders(){
 	std::string vShaderFile = "vertex.glsl";
 	std::string fShaderFile = "fragment.glsl";
-	std::cout << "Gl error testing for shading: " << std::endl;
+	__debug(Begin shader compilation and association: , glGetError())
 	std::cout << glGetError() << std::endl;
 	const GLuint vertexShaderID = glCreateShader(GL_VERTEX_SHADER);
 	const GLuint fragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
-	std::cout << glGetError() << std::endl;
 	
 	std::string vertexShader;
 	std::ifstream vShaderStream(vShaderFile, std::ios::in);
