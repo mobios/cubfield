@@ -4,7 +4,6 @@
 #include "common.h"
 #include "cube.h"
 #include <fstream>
-#include <iostream>
 
 struct windowClass;
 struct renderClass;

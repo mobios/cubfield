@@ -2,7 +2,6 @@
 #define CUBE_H_INCLUDED
 #include "common.h"
 
-
 class cube{
 	bool mine;
 

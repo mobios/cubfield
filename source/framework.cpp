@@ -28,15 +28,15 @@ WNDPROC framework::getWNDPROC() const{
 framework::framework(HINSTANCE hInstanceParam, WNDPROC windowProcParam){
 	hInstance = hInstanceParam;
 	windowProc = windowProcParam;
-	__debug(Pre window generation,"...")
 	window = new windowClass(this);
-	__debug(Pre render generation,"...")
+	__debugP(Window generation)
 	graphics = new renderClass(this);
+	__debugP(Render generation)
 	pField = new field(1,1,1);
-	__debug(Pre vertex generation,"...")
 	pField->genVerticies();
+	__debugP(Vertex generation)
 	graphics->setupVertexArray(pField->getVerticies(), pField->vertexArraySize());
-	__debug(Post vertexArray setup,"...")
+	__debugP(Post vertexArray setup)
 	window->makeAvailable();
 }
 
@@ -113,9 +113,9 @@ renderClass::renderClass(const framework* parentParam){
 	const HDC hDC = parentParam->getWindow()->getHDC();
 	makeGLContext(hDC);
 	loadExtensions(hDC);
-	__debug(loadExtensions error: , glGetError())
+	__debugGL(OpenGL extention function loading)
 	upgradeContext(hDC);
-	__debug(upgrade error: ,glGetError())
+	__debugGL(OpenGl context upgrade)
 	loadShaders();
 }
 
@@ -193,8 +193,7 @@ void renderClass::loadExtensions(const HDC hDC){
 	loadGL(glGenVertexArrays, PFNGLGENVERTEXARRAYSPROC);
 	loadGL(glBindVertexArray, PFNGLBINDVERTEXARRAYPROC);
 	
-	contextState = global::glstate::LOAD;	
-	__debug(OpenGL functions loaded...glState: , contextState)
+	contextState = global::glstate::LOAD;
 }
 
 void renderClass::upgradeContext(const HDC hDC){
@@ -210,12 +209,15 @@ void renderClass::upgradeContext(const HDC hDC){
 	if(!tempHGLRC)
 		finish(global::errorCode::PRECONTEXTUPGRADE, "Could not upgrade context");
 	
-	__debug(GL context elevation status: , glGetError())
+	__debugGL(OpenGL context elevation)
 	wglMakeCurrent(NULL, NULL);
 	wglDeleteContext(hGLrc);
 	wglMakeCurrent(hDC, tempHGLRC);
 	hGLrc = tempHGLRC;
-	__debug(GL 3 context association status: , glGetError())
+	__debugGL(OpenGL 3 context association)
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LESS);
+	__debugGL(OpenGL depth testing);
 }
 
 void renderClass::finish(const global::errorCode code, const std::string &error){
@@ -235,14 +237,17 @@ void renderClass::setupVertexArray(const GLfloat* array, const std::size_t size)
 	glGenBuffers(1, &vertexbuffer);
 	glBindBuffer(GL_ARRAY_BUFFER,vertexbuffer);
 	glBufferData(GL_ARRAY_BUFFER, size*sizeof(float), array, GL_STATIC_DRAW);
-	
+	__debugGL(VBO setup)
 	
 	glGenVertexArrays(1, &vertexAttributeObject);
 	glBindVertexArray(vertexAttributeObject);
 	glEnableVertexAttribArray(0);
+	__debugGL(VAO setup)
+	
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-	glVertexAttribPointer(0, numTriangles, GL_FLOAT, GL_FALSE, 0, (GLubyte*) NULL);
-	__debug(after vertex setup: , glGetError())
+	__debugGL(Pre VAO pointer)
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (GLubyte*) NULL);
+	__debugGL(Post vertex setup)
 }
 
 void renderClass::draw(){
@@ -256,8 +261,7 @@ void renderClass::draw(){
 void renderClass::loadShaders(){
 	std::string vShaderFile = "vertex.glsl";
 	std::string fShaderFile = "fragment.glsl";
-	__debug(Begin shader compilation and association: , glGetError())
-	std::cout << glGetError() << std::endl;
+	__debugGL(Start shader compilation)
 	const GLuint vertexShaderID = glCreateShader(GL_VERTEX_SHADER);
 	const GLuint fragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
 	
@@ -290,6 +294,7 @@ void renderClass::loadShaders(){
 	const char* vertexSource = vertexShader.c_str();
 	glShaderSource(vertexShaderID, 1, &vertexSource, NULL);
 	glCompileShader(vertexShaderID);
+	__debugGL(Vertex Shader)
 	
 	glGetShaderiv(vertexShaderID, GL_COMPILE_STATUS, &compResult);
 	glGetShaderiv(vertexShaderID, GL_INFO_LOG_LENGTH, (int*)&logLength);
@@ -304,6 +309,7 @@ void renderClass::loadShaders(){
 	const char* fragmentSource = fragmentShader.c_str();
 	glShaderSource(fragmentShaderID, 1, &fragmentSource, NULL);
 	glCompileShader(fragmentShaderID);
+	__debugGL(Fragment shader)
 	
 	glGetShaderiv(fragmentShaderID, GL_COMPILE_STATUS, &compResult);
 	glGetShaderiv(fragmentShaderID, GL_INFO_LOG_LENGTH, (int*)&logLength);
@@ -320,6 +326,7 @@ void renderClass::loadShaders(){
 	glAttachShader(shaderProgram, vertexShaderID);
 	glAttachShader(shaderProgram, fragmentShaderID);
 	glLinkProgram(shaderProgram);
+	__debugGL(Shader linking)
 	
 	auto programResult = compResult;
 	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &programResult);

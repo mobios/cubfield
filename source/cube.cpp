@@ -10,7 +10,6 @@ field::field(unsigned char widthParam, unsigned char heightParam, unsigned char 
 }
 
 void field::genVerticies(){
-	__debug(genVerticies() setup,"...")
 	freeVerticies();
 	verticies = new GLfloat[vertexArraySize()];
 	unsigned long position = 0;
@@ -22,7 +21,6 @@ void field::genVerticies(){
 		flags = flags | 0b10;
 	if(depth % 2 == 1)
 		flags = flags | 0b100;
-	__debug(Pre cube initialization,"...")
 	for(unsigned char iTemp = 0; iTemp< depth; ++iTemp){
 		int iEffective = iTemp - depth/2;
 		for(unsigned char jTemp = 0; jTemp < width; ++jTemp){
@@ -34,7 +32,6 @@ void field::genVerticies(){
 			}
 		}
 	}
-	__debug(genVerticies return,"...")
 }
 
 const GLfloat* field::getVerticies() const{

@@ -2,17 +2,27 @@
 #define CPP_program_COMMON
 
 #include <windows.h>
+#include <iostream>
+#include <iomanip>
 #include <string>
+
 #include <GL\gl.h>
 #include <GL\glext.h>
 #include <GL\wglext.h>
 #define PARAM_DEBUG
 
 #define loadGL(func, ptrtype) func = (ptrtype) wglGetProcAddress(#func)
+#define DEBUG_SPACING std::setw(100)
+#define DEBUG_FORMAT std::setiosflags(std::ios::left | std::ios::showbase | std::ios::uppercase) << std::setfill('.')
+
 #ifdef PARAM_DEBUG
-	#define __debug(message, value) std::cout << #message << value << std::endl;
+	#define __debugP(message) {std::cout << DEBUG_FORMAT << DEBUG_SPACING << #message << "[OK]" << std::endl;};
+	#define __debug(message, value) {std::cout << DEBUG_FORMAT << DEBUG_SPACING << #message << value << std::endl;};
+	#define __debugGL(message) {auto e =glGetError(); std::cout << DEBUG_FORMAT << DEBUG_SPACING << #message << std::hex; if(e) std::cout << e; else std::cout << "[OK]"; std::cout << std::dec << std::endl;};
 #else
+	#define __debugP(message, value) ;
 	#define __debug(message, value) ;
+	#define __debugGL(message, value) ;
 #endif
 //#include <GLM\glm.hpp>
 
