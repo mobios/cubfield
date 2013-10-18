@@ -11,14 +11,15 @@
 #include <GL\wglext.h>
 #define PARAM_DEBUG
 
-#define loadGL(func, ptrtype) func = (ptrtype) wglGetProcAddress(#func)
-#define DEBUG_SPACING std::setw(100)
-#define DEBUG_FORMAT std::setiosflags(std::ios::left | std::ios::showbase | std::ios::uppercase) << std::setfill('.')
+#define __loadGL(func, ptrtype) func = (ptrtype) wglGetProcAddress(#func)
+#define __loadResource(type, specifier) "resource/type/specifier"
 
 #ifdef PARAM_DEBUG
 	#define __debugP(message) {std::cout << DEBUG_FORMAT << DEBUG_SPACING << #message << "[OK]" << std::endl;};
 	#define __debug(message, value) {std::cout << DEBUG_FORMAT << DEBUG_SPACING << #message << value << std::endl;};
 	#define __debugGL(message) {auto e =glGetError(); std::cout << DEBUG_FORMAT << DEBUG_SPACING << #message << std::hex; if(e) std::cout << e; else std::cout << "[OK]"; std::cout << std::dec << std::endl;};
+	#define DEBUG_SPACING std::setw(100)
+	#define DEBUG_FORMAT std::setiosflags(std::ios::left | std::ios::showbase | std::ios::uppercase) << std::setfill('.')
 #else
 	#define __debugP(message, value) ;
 	#define __debug(message, value) ;

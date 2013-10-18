@@ -1,4 +1,5 @@
 #include "common.h"
+#include <vector>
 #include <fstream>
 
 struct image{
@@ -53,4 +54,15 @@ public:
 	void pack(const image*);
 	const GLuint getID() const;
 };
+
+class textureEngine{
+	std::vector<std::string> textures;
+
+public:
+	void load();
+
+	void lookup(const char *);
+	void lookup(const std::string);
 	
+	bool validate(std::fstream);
+	 
